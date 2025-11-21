@@ -22,7 +22,7 @@ def pool_factorize(*numbers: int) -> list[list[int]]:
 
 if __name__ == '__main__':
     time_before_single = perf_counter()
-    a, b, c, d = pool_factorize(128, 255, 99999, 10651060)
+    a, b, c, d = factorize(128, 255, 99999, 10651060)
     time_after_single = perf_counter()
     print(f"Single process:  {time_after_single - time_before_single:.6f} sec")
     print(a)
@@ -31,7 +31,7 @@ if __name__ == '__main__':
     print(d)
 
     time_before_pool = perf_counter()
-    a, b, c, d = factorize(128, 255, 99999, 10651060)
+    a, b, c, d = pool_factorize(128, 255, 99999, 10651060)
     time_after_pool = perf_counter()
     print(f"Multiprocessing: {time_after_pool - time_before_pool:.6f} sec")
     print(a)
