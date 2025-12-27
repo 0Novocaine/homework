@@ -1,0 +1,20 @@
+[tool.poetry]
+name = "pythonproject"
+version = "0.1.0"
+description = ""
+authors = ["0Novocaine <yarki92@icloud.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.13"
+aiohttp = "^3.13.2"
+argparse = "^1.4.0"
+aiofile = "^3.9.0"
+aiopath = "^0.7.7"
+websockets = "^15.0.1"
+names = "^0.3.0"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
