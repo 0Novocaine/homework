@@ -1,0 +1,23 @@
+[project]
+name = "hw-7"
+version = "0.1.0"
+description = ""
+authors = [
+    {name = "0Novocaine",email = "yarki92@icloud.com"}
+]
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "sqlalchemy (>=2.0.46,<3.0.0)",
+    "alembic (>=1.18.3,<2.0.0)",
+    "faker (>=40.4.0,<41.0.0)",
+    "psycopg2-binary (>=2.9.11,<3.0.0)",
+    "python-dotenv (>=1.2.1,<2.0.0)"
+]
+
+[tool.poetry]
+packages = [{include = "hw_7", from = "src"}]
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
