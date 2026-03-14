@@ -1,0 +1,21 @@
+[project]
+name = "hw-8"
+version = "0.1.0"
+description = ""
+authors = [
+    {name = "0Novocaine",email = "yarki92@icloud.com"}
+]
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "pymongo (>=4.16.0,<5.0.0)",
+    "mongoengine (>=0.29.1,<0.30.0)",
+    "configparser (>=7.2.0,<8.0.0)",
+    "redis (>=7.2.0,<8.0.0)",
+    "redis-lru (>=0.1.2,<0.2.0)"
+]
+
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
