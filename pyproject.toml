@@ -1,0 +1,21 @@
+[project]
+name = "hw-8-1"
+version = "1"
+description = "hw-8.1"
+authors = [
+    {name = "Novo"}
+]
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "faker (>=40.11.0,<41.0.0)",
+    "pika (>=1.3.2,<2.0.0)",
+    "mongoengine (>=0.29.3,<0.30.0)"
+]
+
+[tool.poetry]
+packages = [{include = "hw_8"}]
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
