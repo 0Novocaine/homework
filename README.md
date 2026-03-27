@@ -8,11 +8,11 @@ python load_quotes.py
 4. Запустить скрипт поиска:
 python search.py
 5. Рабочие команды:
-        help            -   show this help message
-        exit            -   exit program
-        name:<name>     -   find quotes by author name
-        tag:<tag>       -   find quotes by single tag
-        tags:<t1,t2>    -   find quotes by multiple tags
-        all_quotes      -   show all quotes
-        all_authors     -   show all  authors
-        all_tags        -   show all unique tags
+        help            -   show this help message;
+        exit            -   exit program;
+        name:<name>     -   find quotes by author name;
+        tag:<tag>       -   find quotes by single tag;
+        tags:<t1,t2>    -   find quotes by multiple tags;
+        all_quotes      -   show all quotes;
+        all_authors     -   show all  authors;
+        all_tags        -   show all unique tags.
