@@ -1,0 +1,23 @@
+[project]
+name = "famous_people_quotes"
+version = "0.1.0"
+description = ""
+authors = [
+    {name = "0Novocaine",email = "yarki92@icloud.com"}
+]
+readme = "README.md"
+requires-python = ">=3.13"
+
+[tool.poetry.dependencies]
+django = "^5.1"
+psycopg2-binary = "^2.9.9"
+mongoengine = "^0.29.1"
+python-dotenv = "^1.0.1"
+beautifulsoup4 = "^4.12.3"
+requests = "^2.32.3"
+lxml = "^5.3.0"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

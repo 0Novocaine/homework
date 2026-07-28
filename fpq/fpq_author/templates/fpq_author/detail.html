@@ -1,0 +1,12 @@
+{% extends 'fpq_core/index.html' %}
+
+{% block title %}{{ author }}{% endblock %}
+
+{% block content %}
+  <p>
+    He/she was born on <b>{{ author.born_date }}</b> in
+    <b>{{ author.born_location }}</b>.
+  </p>
+
+  <p>{{ author.bio }}</p>
+{% endblock %}

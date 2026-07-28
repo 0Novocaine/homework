@@ -1,0 +1,57 @@
+{% extends 'fpq_core/form.html' %}
+
+{% block title %}Create a new author{% endblock %}
+
+{% block form %}
+  <div class="row mb-3">
+    <label for="name" class="col-sm-2 col-form-label">Name</label>
+    <div class="col-sm-10">
+      {{ form.name }}
+
+      {% if form.errors.name %}
+        <div id="name-error" class="invalid-feedback">
+          {{ form.errors.name }}
+        </div>
+      {% endif %}
+    </div>
+  </div>
+
+  <div class="row mb-3">
+    <label for="born-date" class="col-sm-2 col-form-label">Born date</label>
+    <div class="col-sm-10">
+      {{ form.born_date }}
+
+      {% if form.errors.born_date %}
+        <div id="born-date-error" class="invalid-feedback">
+          {{ form.errors.born_date }}
+        </div>
+      {% endif %}
+    </div>
+  </div>
+
+  <div class="row mb-3">
+    <label for="born-location" class="col-sm-2 col-form-label">
+      Born location
+    </label>
+    <div class="col-sm-10">
+      {{ form.born_location }}
+
+      {% if form.errors.born_location %}
+        <div id="born-location-error" class="invalid-feedback">
+          {{ form.errors.born_location }}
+        </div>
+      {% endif %}
+    </div>
+  </div>
+
+  <div class="row mb-3">
+    <label for="bio" class="col-sm-2 col-form-label">Bio</label>
+    <div class="col-sm-10">
+      {{ form.bio }}
+
+      {% if form.errors.bio %}
+        <div id="bio-error" class="invalid-feedback">{{ form.errors.bio }}</div>
+      {% endif %}
+    </div>
+  </div>
+{% endblock %}
