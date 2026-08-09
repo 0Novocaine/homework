@@ -2,34 +2,24 @@
 
 REST API for managing contacts, built with FastAPI, SQLAlchemy, PostgreSQL, and Pydantic.
 
-## Run with Docker
-
-Prerequisite: Docker Desktop (or Docker Engine with Docker Compose).
-
-1. Copy the example settings: `cp .env.example .env`.
-2. Change `POSTGRES_PASSWORD` in `.env`.
-3. Start the whole project: `docker compose up --build -d`.
-
-The API container automatically applies database migrations once PostgreSQL is healthy.
-Open Swagger at `http://127.0.0.1:8000/docs`.
-
-Useful commands:
+Quick start and test data
 
 ```bash
-docker compose logs -f api      # API logs
-docker compose down             # stop containers, keep database data
-docker compose down -v          # stop containers and delete database data
-```
+# Download the homework branch
+git clone --branch hw-11 --single-branch https://github.com/0Novocaine/homework.git
+cd homework
 
-## Run locally
+# Create local PostgreSQL settings and set a secure password in .env
+cp .env.example .env
 
-1. Create a PostgreSQL database and set `DATABASE_URL`, for example:
-   `postgresql+psycopg2://postgres:password@localhost:5432/contacts_db`.
-2. Install dependencies: `poetry install --no-root`.
-3. Apply migrations: `poetry run alembic upgrade head`.
-4. Start the server: `poetry run uvicorn main:app --reload`.
+# Build and start the API and PostgreSQL
+docker compose up --build -d
 
-Interactive API documentation is available at `http://127.0.0.1:8000/docs`.
+# Create 20 fake contacts with Faker
+docker compose exec api poetry run python seed.py
+
+# View all contacts
+curl http://localhost:8000/api/contacts/
 
 ## Contacts endpoints
 
