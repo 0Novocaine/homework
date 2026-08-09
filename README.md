@@ -34,7 +34,7 @@ curl http://localhost:8000/api/contacts/
 | GET | `/api/contacts/upcoming-birthdays/` | Contacts with birthdays within seven days |
 
 Example request body:
-
+```
 ```json
 {
   "first_name": "Anna",
