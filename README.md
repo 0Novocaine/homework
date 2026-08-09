@@ -21,8 +21,10 @@ docker compose exec api poetry run python seed.py
 # View all contacts
 curl http://localhost:8000/api/contacts/
 
-## Contacts endpoints
+
 ```
+## Contacts endpoints
+
 | Method | Endpoint | Description |
 | --- | --- | --- |
 | POST | `/api/contacts/` | Create a contact |
@@ -33,7 +35,7 @@ curl http://localhost:8000/api/contacts/
 | GET | `/api/contacts/search/?query=ann` | Search by first name, last name, or email |
 | GET | `/api/contacts/upcoming-birthdays/` | Contacts with birthdays within seven days |
 
-Example request body:
+###Example request body:
 
 ```json
 {
