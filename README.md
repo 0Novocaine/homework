@@ -1,6 +1,6 @@
 # Contacts API
 
-REST API for managing contacts, built with FastAPI, SQLAlchemy, PostgreSQL, and Pydantic.
+REST API для зберігання та управління контактами.
 
 Quick start and test data
 
