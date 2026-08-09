@@ -35,7 +35,7 @@ curl http://localhost:8000/api/contacts/
 | GET | `/api/contacts/search/?query=ann` | Search by first name, last name, or email |
 | GET | `/api/contacts/upcoming-birthdays/` | Contacts with birthdays within seven days |
 
-###Example request body:
+### Example request body:
 
 ```json
 {
