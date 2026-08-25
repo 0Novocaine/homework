@@ -1,6 +1,6 @@
 # Contacts API — Homework 12
 
-FastAPI contacts service with PostgreSQL, JWT authentication and owner-only access.
+FastAPI with JWT authentication and owner-only access.
 
 ## Run with Docker
 
@@ -15,7 +15,7 @@ The API applies Alembic migrations automatically. Open Swagger at
 
 ## Authentication
 
-Register a user with `POST /api/auth/signup`:
+Register user with `POST /api/auth/signup`:
 
 ```json
 {
@@ -34,7 +34,7 @@ Authenticate with `POST /api/auth/login` using JSON:
 }
 ```
 
-The response contains an `access_token` and a `refresh_token`. Use the access token
+The response contains an `access_token` and `refresh_token`. Use the access token
 for every contacts request:
 
 ```text
