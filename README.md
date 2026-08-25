@@ -41,23 +41,13 @@ for every contacts request:
 Authorization: Bearer <access_token>
 ```
 
-Use `POST /api/auth/refresh` and pass the refresh token in the same header to receive
-a new token pair. Contacts from another user are never returned or changed.
-
 ## Test data
 
 ```bash
 docker compose exec api poetry run python seed.py
 ```
 
-This creates 20 contacts owned by `seed@example.com`. The test password is
+This creates 20 contacts. The test password is
 `seedpassword`.
 
 ## Useful commands
-
-```bash
-docker compose ps
-docker compose logs -f api
-docker compose down
-docker compose down -v  # also deletes PostgreSQL data
-```
