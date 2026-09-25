@@ -1,79 +1,66 @@
-# Contacts API — secure configuration
+# Contacts API
 
-FastAPI contacts service with PostgreSQL, JWT authentication and owner-only access.
+REST API для работы с контактами.
 
-## Run with Docker
+## Запуск
+
+1. Создание файла с настройками:
 
 ```bash
 cp .env.example .env
-# Set strong POSTGRES_PASSWORD and JWT_SECRET_KEY values in .env.
-# Add SMTP values for email confirmation.
-# Add Cloudinary values to enable avatar uploads.
+```
+
+2. Откройте `.env`, вставьте свои данніе:
+
+- `POSTGRES_PASSWORD` — пароль базы данных;
+- `JWT_SECRET_KEY` — случайная строка длиной не меньше 32 символов;
+- настройки почты (`MAIL_*`) — для подтверждения email.
+
+Для загрузки аваторов, дополнительно заполните переменные `CLOUDINARY_*`.
+
+3. Сбор и запуск проекта:
+
+```bash
 docker compose up --build -d
 ```
 
-If port 8000 is already used by another project, set `API_PORT=8001` in `.env`.
-
-The API applies Alembic migrations automatically. Open Swagger at
-`http://localhost:8000/docs`.
-
-Docker starts PostgreSQL and Redis. The endpoint `GET /api/contacts/` is
-limited to 10 requests per minute. CORS permits origins specified by
-`CORS_ORIGINS` (comma-separated), defaulting to `http://localhost:3000`.
-
-## User profile
-
-`GET /api/users/me/` returns the authenticated user's profile.
-
-`PATCH /api/users/avatar` accepts an image in the multipart field `file` and
-stores it in Cloudinary. Set `CLOUDINARY_NAME`, `CLOUDINARY_API_KEY`, and
-`CLOUDINARY_API_SECRET` in `.env` before using this route.
-
-## Authentication
-
-Register a user with `POST /api/auth/signup`:
-
-```json
-{
-  "username": "anna_user",
-  "email": "anna@example.com",
-  "password": "secure-password"
-}
-```
-
-Authenticate with `POST /api/auth/login` using JSON:
-
-```json
-{
-  "email": "anna@example.com",
-  "password": "secure-password"
-}
-```
-
-The response contains an `access_token` and a `refresh_token`. Use the access token
-for every contacts request:
+Документация Swagger на адресе:
 
 ```text
-Authorization: Bearer <access_token>
+http://localhost:8000/docs
 ```
 
-Use `POST /api/auth/refresh` and pass the refresh token in the same header to receive
-a new token pair. Contacts from another user are never returned or changed.
+## Как пользоваться API
 
-## Test data
+1. Зарегистрируйте пользователя: `POST /api/auth/signup`.
+2. Подтвердите email по ссылке из письма.
+3. Войдите через `POST /api/auth/login` и получите `access_token` и `refresh_token`.
+4. В Swagger нажмите **Authorize** и вставьте `access_token`.
+
+Для обновления пары токенов используйте `POST /api/auth/refresh` и передавайте refresh-токен в заголовке:
+
+```text
+Authorization: Bearer <refresh_token>
+```
+
+Контакты ограничены до 10 запросов в минуту для одного пользователя.
+
+## Аватар
+
+После авторизации аватар можно загрузить через:
+
+```text
+PATCH /api/users/avatar
+```
+
+В Swagger выберите файл изображения в поле `file`. Для этого нужен заполненный Cloudinary в `.env`.
+Профиль текущего пользователя: `GET /api/users/me/`.
+
+## Тестовые контакты
 
 ```bash
 docker compose exec api poetry run python seed.py
 ```
 
-This creates 20 contacts owned by `seed@example.com`. The test password is
-`seedpassword`.
+Команда создаст 20 контактов пользователя `seed@example.com`. Пароль: `seedpassword`.
 
-## Useful commands
-
-```bash
-docker compose ps
-docker compose logs -f api
-docker compose down
-docker compose down -v  # also deletes PostgreSQL data
-```
