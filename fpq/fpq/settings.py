@@ -17,16 +17,17 @@ from dotenv import load_dotenv
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
+load_dotenv()
 
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-8#47*)t1yun6ex-%1)y&53vo4lgmo3p798=)vc%c^%6ee%aj@d'
+SECRET_KEY = environ['SECRET_KEY']
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = environ.get('DEBUG', 'false').lower() == 'true'
 
 ALLOWED_HOSTS = []
 
@@ -82,8 +83,6 @@ WSGI_APPLICATION = 'fpq.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 
-load_dotenv()
-
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
@@ -136,3 +135,16 @@ STATIC_URL = 'static/'
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# SMTP credentials belong in .env, never in source code.
+EMAIL_BACKEND = environ.get(
+    'EMAIL_BACKEND', 'fpq_user.email_backend.EmailBackend'
+)
+EMAIL_HOST = environ.get('EMAIL_HOST', 'smtp.ukr.net')
+EMAIL_PORT = int(environ.get('EMAIL_PORT', '465'))
+EMAIL_USE_SSL = environ.get('EMAIL_USE_SSL', 'true').lower() == 'true'
+EMAIL_USE_TLS = environ.get('EMAIL_USE_TLS', 'false').lower() == 'true'
+EMAIL_HOST_USER = environ.get('EMAIL_HOST_USER', '')
+EMAIL_HOST_PASSWORD = environ.get('EMAIL_HOST_PASSWORD', '')
+DEFAULT_FROM_EMAIL = environ.get('DEFAULT_FROM_EMAIL', EMAIL_HOST_USER)
+EMAIL_LOCAL_HOSTNAME = environ.get('EMAIL_LOCAL_HOSTNAME', 'localhost')

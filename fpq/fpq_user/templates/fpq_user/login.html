@@ -32,4 +32,8 @@
   {% endblock %}
 
   <input type="hidden" name="next" value="{% url 'fpq_core:index' %}">
+
+  <p class="text-center mb-0">
+    <a href="{% url 'fpq_user:password_reset' %}">Forgot password?</a>
+  </p>
 {% endblock %}
