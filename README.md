@@ -32,8 +32,6 @@ docker compose up --build -d
 http://localhost:8000/docs
 ```
 
-При занятом порте 8000 в `.env` можно указать, например, `API_PORT=8001`. В этом случае Swagger будет доступен по адресу `http://localhost:8001/docs`.
-
 ## Как пользоваться API
 
 1. Регистрация пользователя: `POST /api/auth/signup`.
@@ -90,7 +88,7 @@ poetry run python -m pytest
 poetry run python -m pytest --cov=src --cov-report=term-missing
 ```
 
-Текущее общее покрытие тестами = 74%.
+Текущее покрытие тестами = 74%.
 
 Сборка HTML-документации Sphinx:
 
