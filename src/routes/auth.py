@@ -1,3 +1,5 @@
+"""HTTP routes for registration, email confirmation, and JWT authentication."""
+
 from typing import List
 
 from fastapi import APIRouter, HTTPException, Depends, status, Security, BackgroundTasks, Request
@@ -17,6 +19,21 @@ router = APIRouter(prefix='/auth', tags=["auth"])
 
 @router.post("/signup", response_model=UserResponse, status_code=status.HTTP_201_CREATED)
 async def signup(body: UserModel, background_tasks: BackgroundTasks, request: Request, db: Session = Depends(get_db)):
+    """
+    Registers a user and schedules an email confirmation message.
+
+    :param body: The registration data for the user.
+    :type body: UserModel
+    :param background_tasks: The queue used to send the confirmation email.
+    :type background_tasks: BackgroundTasks
+    :param request: The incoming HTTP request used to build the confirmation URL.
+    :type request: Request
+    :param db: The database session.
+    :type db: Session
+    :return: The newly created user and a confirmation message.
+    :rtype: UserResponse
+    :raises HTTPException: If an account with the supplied email already exists.
+    """
     exist_user = await repository_users.get_user_by_email(body.email, db)
     if exist_user:
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Account already exists")
@@ -28,6 +45,17 @@ async def signup(body: UserModel, background_tasks: BackgroundTasks, request: Re
 
 @router.post("/login", response_model=TokenModel)
 async def login(body: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
+    """
+    Authenticates a confirmed user and returns an access and refresh token pair.
+
+    :param body: The login form containing email in the ``username`` field and password.
+    :type body: OAuth2PasswordRequestForm
+    :param db: The database session.
+    :type db: Session
+    :return: JWT access and refresh tokens.
+    :rtype: TokenModel
+    :raises HTTPException: If the credentials are invalid or the email is unconfirmed.
+    """
     user = await repository_users.get_user_by_email(body.username, db)
     if user is None:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid email")
@@ -44,6 +72,17 @@ async def login(body: OAuth2PasswordRequestForm = Depends(), db: Session = Depen
 
 @router.post('/refresh', response_model=TokenModel)
 async def refresh_token(credentials: HTTPAuthorizationCredentials | None = Security(bearer_scheme), db: Session = Depends(get_db)):
+    """
+    Replaces a valid refresh token with a new access and refresh token pair.
+
+    :param credentials: The bearer token credentials containing the refresh token.
+    :type credentials: HTTPAuthorizationCredentials | None
+    :param db: The database session.
+    :type db: Session
+    :return: A new JWT access and refresh token pair.
+    :rtype: TokenModel
+    :raises HTTPException: If the refresh token is absent, invalid, or revoked.
+    """
     if credentials is None:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Could not validate credentials")
     token = credentials.credentials
@@ -61,6 +100,17 @@ async def refresh_token(credentials: HTTPAuthorizationCredentials | None = Secur
 
 @router.get('/confirmed_email/{token}')
 async def confirmed_email(token: str, db: Session = Depends(get_db)):
+    """
+    Confirms a user's email address using a token from the confirmation link.
+
+    :param token: The email confirmation token.
+    :type token: str
+    :param db: The database session.
+    :type db: Session
+    :return: A message describing the confirmation result.
+    :rtype: dict
+    :raises HTTPException: If the token does not identify an existing user.
+    """
     email = await auth_service.get_email_from_token(token)
     user = await repository_users.get_user_by_email(email, db)
     if user is None:
@@ -74,6 +124,20 @@ async def confirmed_email(token: str, db: Session = Depends(get_db)):
 @router.post('/request_email')
 async def request_email(body: RequestEmail, background_tasks: BackgroundTasks, request: Request,
                         db: Session = Depends(get_db)):
+    """
+    Sends a new email confirmation message when the user's email is unconfirmed.
+
+    :param body: The email address for which confirmation is requested.
+    :type body: RequestEmail
+    :param background_tasks: The queue used to send the confirmation email.
+    :type background_tasks: BackgroundTasks
+    :param request: The incoming HTTP request used to build the confirmation URL.
+    :type request: Request
+    :param db: The database session.
+    :type db: Session
+    :return: A message asking the user to check their email.
+    :rtype: dict
+    """
     user = await repository_users.get_user_by_email(body.email, db)
 
     if user.confirmed:

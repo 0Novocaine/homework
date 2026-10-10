@@ -1,3 +1,5 @@
+"""Email confirmation delivery service."""
+
 from pathlib import Path
 
 from fastapi_mail import FastMail, MessageSchema, ConnectionConfig, MessageType
@@ -24,6 +26,18 @@ conf = ConnectionConfig(
 
 
 async def send_email(email: EmailStr, username: str, host: str):
+    """
+    Sends an email confirmation message to a newly registered user.
+
+    :param email: The recipient's email address.
+    :type email: EmailStr
+    :param username: The name of the recipient shown in the email template.
+    :type username: str
+    :param host: The base URL used to build the confirmation link.
+    :type host: str
+    :return: None.
+    :rtype: None
+    """
     try:
         token_verification = auth_service.create_email_token({"sub": email})
         message = MessageSchema(

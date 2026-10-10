@@ -1,79 +1,115 @@
-# Contacts API — secure configuration
+# Contacts API
 
-FastAPI contacts service with PostgreSQL, JWT authentication and owner-only access.
+REST API для работы с контактами. Проект написан на FastAPI, использует PostgreSQL, JWT-авторизацию, Redis и Cloudinary.
 
-## Run with Docker
+Пользователь видит и изменяет только свои контакты.
+
+## Запуск
+
+1. Создание файла с настройками:
 
 ```bash
 cp .env.example .env
-# Set strong POSTGRES_PASSWORD and JWT_SECRET_KEY values in .env.
-# Add SMTP values for email confirmation.
-# Add Cloudinary values to enable avatar uploads.
+```
+
+2. Заполнение файла `.env`. Обязательные параметры:
+
+- `POSTGRES_PASSWORD` пароль базы данных;
+- `JWT_SECRET_KEY` случайная строка длиной не меньше 32 символов;
+- настройки почты (`MAIL_*`) для подтверждения email.
+
+Для загрузки аватаров также указываются переменные `CLOUDINARY_*`.
+
+3. Сборка и запуск проекта:
+
+```bash
 docker compose up --build -d
 ```
 
-If port 8000 is already used by another project, set `API_PORT=8001` in `.env`.
-
-The API applies Alembic migrations automatically. Open Swagger at
-`http://localhost:8000/docs`.
-
-Docker starts PostgreSQL and Redis. The endpoint `GET /api/contacts/` is
-limited to 10 requests per minute. CORS permits origins specified by
-`CORS_ORIGINS` (comma-separated), defaulting to `http://localhost:3000`.
-
-## User profile
-
-`GET /api/users/me/` returns the authenticated user's profile.
-
-`PATCH /api/users/avatar` accepts an image in the multipart field `file` and
-stores it in Cloudinary. Set `CLOUDINARY_NAME`, `CLOUDINARY_API_KEY`, and
-`CLOUDINARY_API_SECRET` in `.env` before using this route.
-
-## Authentication
-
-Register a user with `POST /api/auth/signup`:
-
-```json
-{
-  "username": "anna_user",
-  "email": "anna@example.com",
-  "password": "secure-password"
-}
-```
-
-Authenticate with `POST /api/auth/login` using JSON:
-
-```json
-{
-  "email": "anna@example.com",
-  "password": "secure-password"
-}
-```
-
-The response contains an `access_token` and a `refresh_token`. Use the access token
-for every contacts request:
+Миграции применяются автоматически. Документация Swagger будет доступна по адресу:
 
 ```text
-Authorization: Bearer <access_token>
+http://localhost:8000/docs
 ```
 
-Use `POST /api/auth/refresh` and pass the refresh token in the same header to receive
-a new token pair. Contacts from another user are never returned or changed.
+При занятом порте 8000 в `.env` можно указать, например, `API_PORT=8001`. В этом случае Swagger будет доступен по адресу `http://localhost:8001/docs`.
 
-## Test data
+## Как пользоваться API
+
+1. Регистрация пользователя: `POST /api/auth/signup`.
+2. Подтверждение e-mail по ссылке из письма.
+3. Аутентификация через `POST /api/auth/login` с получением `access_token` и `refresh_token`.
+4. Авторизация в Swagger: кнопка **Authorize**, значение = `access_token`.
+5. Работа с маршрутами контактов после авторизации.
+
+Обновление пары токенов выполняется через `POST /api/auth/refresh`. Refresh-токен передаётся в заголовке:
+
+```text
+Authorization: Bearer <refresh_token>
+```
+
+Контакты ограничены до 10 запросов в минуту для одного пользователя. Это относится и к созданию контакта.
+
+## Аватар
+
+Загрузка аватара после авторизации выполняется через:
+
+```text
+PATCH /api/users/avatar
+```
+
+В Swagger файл изображения передаётся в поле `file`. Для работы маршрута требуется заполненная конфигурация Cloudinary в `.env`.
+
+Профиль текущего пользователя: `GET /api/users/me/`.
+
+## Тестовые контакты
 
 ```bash
 docker compose exec api poetry run python seed.py
 ```
 
-This creates 20 contacts owned by `seed@example.com`. The test password is
-`seedpassword`.
+Команда создаёт 20 контактов пользователя `seed@example.com`. Пароль: `seedpassword`.
 
-## Useful commands
+## Проверка проекта
+
+В проекте используются:
+
+- unit-тесты репозиториев `notes`, `tags`, `users` и `contacts` на `unittest`;
+- функциональные тесты маршрутов аутентификации и тегов на `pytest`;
+- документация исходного кода на Sphinx.
+
+Запуск всех тестов:
+
+```bash
+poetry run python -m pytest
+```
+
+Проверка покрытия кода тестами:
+
+```bash
+poetry run python -m pytest --cov=src --cov-report=term-missing
+```
+
+Текущее общее покрытие тестами = 74%.
+
+Сборка HTML-документации Sphinx:
+
+```bash
+poetry run sphinx-build -b html -W docs/source docs/_build/html
+```
+
+После сборки главная страница документации находится в файле `docs/_build/html/index.html`.
+
+## Полезные команды
 
 ```bash
 docker compose ps
 docker compose logs -f api
 docker compose down
-docker compose down -v  # also deletes PostgreSQL data
+```
+
+Удаление контейнеров вместе с данными PostgreSQL:
+
+```bash
+docker compose down -v
 ```

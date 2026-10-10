@@ -1,3 +1,5 @@
+"""HTTP routes for authenticated user profiles and avatars."""
+
 import cloudinary
 import cloudinary.uploader
 from fastapi import APIRouter, Depends, File, HTTPException, UploadFile, status
@@ -17,6 +19,14 @@ router = APIRouter(prefix='/users', tags=['users'])
 async def read_users_me(
     current_user: User = Depends(auth_service.get_current_user),
 ):
+    """
+    Returns the profile of the authenticated user.
+
+    :param current_user: The authenticated user.
+    :type current_user: User
+    :return: The user's profile.
+    :rtype: UserDb
+    """
     return current_user
 
 
@@ -26,6 +36,19 @@ async def update_avatar_user(
     current_user: User = Depends(auth_service.get_current_user),
     db: Session = Depends(get_db),
 ):
+    """
+    Uploads an avatar image to Cloudinary and updates the user's profile.
+
+    :param file: The image file to use as the avatar.
+    :type file: UploadFile
+    :param current_user: The authenticated user.
+    :type current_user: User
+    :param db: The database session.
+    :type db: Session
+    :return: The user profile with the new avatar URL.
+    :rtype: UserDb
+    :raises HTTPException: If Cloudinary is unavailable or the uploaded file is not an image.
+    """
     if not settings.cloudinary_configured:
         raise HTTPException(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,

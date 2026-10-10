@@ -1,3 +1,5 @@
+"""Application entry point for the Contacts API."""
+
 import redis.asyncio as redis
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
@@ -29,6 +31,12 @@ app.include_router(users.router, prefix="/api")
 
 @app.on_event('startup')
 async def startup() -> None:
+    """
+    Creates the Redis connection and initializes the request rate limiter.
+
+    :return: None.
+    :rtype: None
+    """
     redis_connection = redis.Redis(
         host=settings.redis_host,
         port=settings.redis_port,
@@ -43,11 +51,23 @@ async def startup() -> None:
 
 @app.on_event('shutdown')
 async def shutdown() -> None:
+    """
+    Closes the Redis connection when the application shuts down.
+
+    :return: None.
+    :rtype: None
+    """
     await app.state.redis.aclose()
 
 
 @app.get("/")
 def read_root():
+    """
+    Returns a message confirming that the API is running.
+
+    :return: The API status message.
+    :rtype: dict
+    """
     return {"message": "Contacts API is running"}
 
 if __name__ == "__main__":
