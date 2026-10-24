@@ -1,0 +1,1 @@
+"""PhotoShare application package."""
