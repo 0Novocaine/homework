@@ -27,7 +27,7 @@ def get_auth_service(db: Session = Depends(get_db)) -> AuthService:
 
 
 def get_user_service(db: Session = Depends(get_db)) -> UserService:
-    return UserService(UserRepository(db))
+    return UserService(UserRepository(db), PhotoRepository(db), CloudinaryService())
 
 
 def get_photo_service(db: Session = Depends(get_db)) -> PhotoService:

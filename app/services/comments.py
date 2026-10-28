@@ -15,8 +15,11 @@ class CommentService:
         self.photos = photos
 
     def create(self, photo_id: UUID, user: User, data: CommentCreateRequest) -> Comment:
-        if self.photos.get(photo_id) is None:
+        photo = self.photos.get(photo_id)
+        if photo is None:
             raise HTTPException(status_code=404, detail="Photo not found")
+        if photo.owner_id == user.id:
+            raise HTTPException(status_code=403, detail="You cannot comment on your own photo")
         return self.comments.add(Comment(text=data.text, user_id=user.id, photo_id=photo_id))
 
     def list(self, photo_id: UUID) -> list[Comment]:

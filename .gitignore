@@ -7,3 +7,6 @@ __pycache__/
 htmlcov/
 photoshare.db
 *.sqlite3
+.DS_Store
+.idea/
+*.egg-info/

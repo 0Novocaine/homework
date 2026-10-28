@@ -35,7 +35,7 @@ class BlurStrategy(TransformationStrategy):
 
 class RotationStrategy(TransformationStrategy):
     def build(self, width: int | None, height: int | None, angle: int | None) -> dict:
-        return {"angle": angle or 90}
+        return {"angle": angle}
 
 
 class CloudinaryService:
@@ -51,12 +51,14 @@ class CloudinaryService:
             api_secret=settings.cloudinary_api_secret, secure=True,
         )
 
-    def upload(self, content: bytes, filename: str) -> tuple[str, str]:
-        result = cloudinary.uploader.upload(BytesIO(content), folder="photoshare", public_id=filename.rsplit(".", 1)[0])
+    def upload(self, content: bytes, public_id: str) -> tuple[str, str]:
+        result = cloudinary.uploader.upload(BytesIO(content), folder="photoshare", public_id=public_id)
         return result["secure_url"], result["public_id"]
 
     def delete(self, public_id: str) -> None:
-        cloudinary.uploader.destroy(public_id)
+        result = cloudinary.uploader.destroy(public_id)
+        if result.get("result") not in {"ok", "not found"}:
+            raise RuntimeError("Cloudinary did not confirm image deletion")
 
     def transformed_url(self, public_id: str, kind: str, width: int | None, height: int | None, angle: int | None) -> tuple[str, dict]:
         options = self._strategies[kind].build(width, height, angle)

@@ -1,8 +1,8 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException, status
 
 from app.api.dependencies import get_current_user, get_user_service, require_admin
 from app.models.user import User
-from app.schemas.user import PublicProfileResponse, UserResponse, UserStatusUpdate, UserUpdateRequest
+from app.schemas.user import PublicProfileResponse, UserResponse, UserRoleUpdate, UserStatusUpdate, UserUpdateRequest
 from app.services.users import UserService
 
 router = APIRouter(prefix="/users", tags=["Users"])
@@ -26,5 +26,24 @@ def public_profile(username: str, service: UserService = Depends(get_user_servic
 
 @router.patch("/{username}/active", response_model=UserResponse, summary="Ban or unban a user")
 def set_active(username: str, data: UserStatusUpdate, _: User = Depends(require_admin), service: UserService = Depends(get_user_service)):
-    target, _ = service.public_profile(username)
+    admin = _
+    target, _photo_count = service.public_profile(username)
+    if target.id == admin.id:
+        raise HTTPException(status_code=400, detail="You cannot change your own active status")
     return service.set_active(target, data.is_active)
+
+
+@router.patch("/{username}/role", response_model=UserResponse, summary="Change a user role between USER and MODERATOR")
+def change_role(username: str, data: UserRoleUpdate, admin: User = Depends(require_admin), service: UserService = Depends(get_user_service)):
+    target, _photo_count = service.public_profile(username)
+    if target.id == admin.id:
+        raise HTTPException(status_code=400, detail="You cannot change your own role")
+    return service.change_role(target, data.role)
+
+
+@router.delete("/{username}", status_code=status.HTTP_204_NO_CONTENT, summary="Delete a user and their data")
+def delete_user(username: str, admin: User = Depends(require_admin), service: UserService = Depends(get_user_service)):
+    target, _photo_count = service.public_profile(username)
+    if target.id == admin.id:
+        raise HTTPException(status_code=400, detail="You cannot delete yourself")
+    service.delete(target)

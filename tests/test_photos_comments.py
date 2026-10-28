@@ -52,6 +52,7 @@ def test_upload_get_edit_transform_and_delete_photo(client: TestClient, db: Sess
     photo_id = photo["id"]
     assert client.get(f"/api/photos/{photo_id}").status_code == 200
     assert client.patch(f"/api/photos/{photo_id}", json={"description": "edited"}, headers=headers).json()["description"] == "edited"
+    assert client.put(f"/api/photos/{photo_id}", json={"description": "replaced"}, headers=headers).json()["description"] == "replaced"
     transformed = client.post(f"/api/photos/{photo_id}/transformations", json={"kind": "grayscale"}, headers=headers)
     assert transformed.status_code == 201
     assert transformed.json()["qr_code"].startswith("data:image/png;base64,")
@@ -69,6 +70,22 @@ def test_photo_permissions_tags_and_upload_validation(client: TestClient, db: Se
     assert upload(client, owner_headers, ["same", "SAME"]).status_code == 422
     response = client.post("/api/photos", headers=owner_headers, files={"image": ("bad.txt", b"no", "text/plain")})
     assert response.status_code == 415
+
+
+def test_search_pagination_and_transformation_validation(client: TestClient, db: Session):
+    use_fake_photo_service(db)
+    register(client, "owner", "owner@example.com")
+    headers = token(client, "owner")
+    upload(client, headers, ["city"])
+    result = client.get("/api/photos", params={"tag": "CITY", "page": 1, "page_size": 1, "sort": "newest"})
+    assert result.status_code == 200
+    assert result.json()["total"] == 1
+    photo_id = result.json()["items"][0]["id"]
+    client.put(f"/api/photos/{photo_id}", json={"description": "Blue city skyline"}, headers=headers)
+    assert client.get("/api/photos", params={"search": "skyline", "tag": "city"}).json()["total"] == 1
+    assert client.get("/api/photos", params={"search": "forest"}).json()["total"] == 0
+    assert client.post(f"/api/photos/{photo_id}/transformations", json={"kind": "crop", "width": 50}, headers=headers).status_code == 422
+    assert client.post(f"/api/photos/{photo_id}/transformations", json={"kind": "rotation"}, headers=headers).status_code == 422
 
 
 def test_comments_author_edit_and_moderator_deletion(client: TestClient, db: Session):

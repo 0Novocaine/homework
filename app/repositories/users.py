@@ -4,7 +4,7 @@ from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
 from app.models.photo import Photo
-from app.models.user import User
+from app.models.user import Role, User
 
 
 class UserRepository:
@@ -30,6 +30,16 @@ class UserRepository:
         self.db.commit()
         self.db.refresh(user)
         return user
+
+    def delete(self, user: User) -> None:
+        self.db.delete(user)
+        self.db.commit()
+
+    def active_admin_count(self, excluding_id: UUID | None = None) -> int:
+        statement = select(func.count()).select_from(User).where(User.role == Role.ADMIN, User.is_active.is_(True))
+        if excluding_id:
+            statement = statement.where(User.id != excluding_id)
+        return self.db.scalar(statement) or 0
 
     def photo_count(self, user_id: UUID) -> int:
         return self.db.scalar(select(func.count()).select_from(Photo).where(Photo.owner_id == user_id)) or 0

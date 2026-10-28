@@ -1,8 +1,11 @@
 import json
-from uuid import UUID
+import logging
+from io import BytesIO
+from uuid import UUID, uuid4
 
 from fastapi import HTTPException, UploadFile
 from PIL import Image, UnidentifiedImageError
+from sqlalchemy.exc import SQLAlchemyError
 
 from app.core.config import get_settings
 from app.integrations.cloudinary_service import CloudinaryService
@@ -11,6 +14,9 @@ from app.models.photo import Photo, PhotoTransformation
 from app.models.user import Role, User
 from app.repositories.photos import PhotoRepository
 from app.schemas.photo import PhotoUpdateRequest, TransformationRequest
+
+logger = logging.getLogger(__name__)
+_FORMAT_MIME = {"JPEG": "image/jpeg", "PNG": "image/png", "WEBP": "image/webp"}
 
 
 class PhotoService:
@@ -48,14 +54,33 @@ class PhotoService:
         if len(content) > settings.max_upload_size_bytes:
             raise HTTPException(status_code=413, detail="Image exceeds 5 MB limit")
         try:
-            Image.open(__import__("io").BytesIO(content)).verify()
+            image = Image.open(BytesIO(content))
+            image_format = image.format
+            image.verify()
         except (UnidentifiedImageError, OSError):
             raise HTTPException(status_code=422, detail="Uploaded file is not a valid image")
+        if _FORMAT_MIME.get(image_format) != upload.content_type:
+            raise HTTPException(status_code=422, detail="Image content does not match its MIME type")
         normalized_tags = self._normalize_tags(tags)
-        image_url, public_id = self.cloudinary.upload(content, upload.filename or "photo")
-        photo = Photo(description=description, image_url=image_url, public_id=public_id, owner_id=owner.id)
-        photo.tags = [self.photos.get_or_create_tag(tag) for tag in normalized_tags]
-        return self.photos.add(photo)
+        try:
+            image_url, public_id = self.cloudinary.upload(content, str(uuid4()))
+        except Exception as exc:
+            logger.exception("Cloudinary upload failed")
+            raise HTTPException(status_code=502, detail="Could not upload image to storage") from exc
+        try:
+            photo = Photo(description=description, image_url=image_url, public_id=public_id, owner_id=owner.id)
+            photo.tags = [self.photos.get_or_create_tag(tag) for tag in normalized_tags]
+            return self.photos.add(photo)
+        except SQLAlchemyError as exc:
+            self.photos.db.rollback()
+            try:
+                self.cloudinary.delete(public_id)
+            except Exception:
+                logger.exception("Could not compensate failed photo creation")
+            raise HTTPException(status_code=500, detail="Could not save photo") from exc
+
+    def list(self, search: str | None, tag: str | None, page: int, page_size: int, sort: str) -> tuple[list[Photo], int]:
+        return self.photos.list(search, tag, page, page_size, newest=sort == "newest")
 
     def update(self, photo_id: UUID, user: User, data: PhotoUpdateRequest) -> Photo:
         photo = self.get(photo_id)
@@ -66,8 +91,17 @@ class PhotoService:
     def delete(self, photo_id: UUID, user: User) -> None:
         photo = self.get(photo_id)
         self._assert_owner_or_admin(photo, user)
-        self.cloudinary.delete(photo.public_id)
-        self.photos.delete(photo)
+        try:
+            self.cloudinary.delete(photo.public_id)
+        except Exception as exc:
+            logger.exception("Cloudinary deletion failed for photo %s", photo.id)
+            raise HTTPException(status_code=502, detail="Could not delete image from storage") from exc
+        try:
+            self.photos.delete(photo)
+        except SQLAlchemyError as exc:
+            self.photos.db.rollback()
+            logger.exception("Database deletion failed after Cloudinary deletion for photo %s", photo.id)
+            raise HTTPException(status_code=500, detail="Could not delete photo record") from exc
 
     def transform(self, photo_id: UUID, user: User, data: TransformationRequest) -> PhotoTransformation:
         photo = self.get(photo_id)

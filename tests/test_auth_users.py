@@ -40,3 +40,28 @@ def test_regular_user_cannot_ban(client: TestClient):
     register(client, "admin", "admin@example.com")
     register(client, "bob", "bob@example.com")
     assert client.patch("/api/users/admin/active", json={"is_active": False}, headers=token(client, "bob")).status_code == 403
+
+
+def test_admin_cannot_ban_self_or_last_admin_and_can_change_user_role(client: TestClient):
+    register(client, "admin", "admin@example.com")
+    register(client, "bob", "bob@example.com")
+    headers = token(client, "admin")
+    assert client.patch("/api/users/admin/active", json={"is_active": False}, headers=headers).status_code == 400
+    changed = client.patch("/api/users/bob/role", json={"role": "MODERATOR"}, headers=headers)
+    assert changed.status_code == 200
+    assert changed.json()["role"] == "MODERATOR"
+    assert client.patch("/api/users/bob/role", json={"role": "ADMIN"}, headers=headers).status_code == 422
+
+
+def test_admin_can_delete_another_user_but_not_self(client: TestClient):
+    register(client, "admin", "admin@example.com")
+    register(client, "bob", "bob@example.com")
+    headers = token(client, "admin")
+    assert client.get("/api/users/me", headers=headers).json()["username"] == "admin"
+    assert client.delete("/api/users/admin", headers=headers).status_code == 400
+    assert client.delete("/api/users/bob", headers=headers).status_code == 204
+    assert client.get("/api/users/bob").status_code == 404
+
+
+def test_health_endpoint(client: TestClient):
+    assert client.get("/health").json() == {"status": "ok"}

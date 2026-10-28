@@ -30,3 +30,7 @@ class UserUpdateRequest(BaseModel):
 
 class UserStatusUpdate(BaseModel):
     is_active: bool
+
+
+class UserRoleUpdate(BaseModel):
+    role: Role
